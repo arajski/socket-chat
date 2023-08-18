@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"net"
 	"os"
 )
@@ -36,8 +35,24 @@ func handleServer(args []string) {
 			continue
 		}
 
-		conn.Write([]byte("Connection estabilished"))
-		conn.Close()
+		conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
+		conn.Write([]byte("To list channels, type 'list'\n"))
+		conn.Write([]byte("To join a channel, type 'join'\n"))
+		conn.Write([]byte("To create a channel, type 'create'\n"))
+
+		for {
+			buf := make([]byte, 1024)
+			n, err := conn.Read(buf)
+			if err != nil {
+				fmt.Println("could not receive a response from client")
+			}
+			msg := string(buf[:n])
+			fmt.Println(msg)
+			if msg == "exit" {
+				conn.Close()
+				break
+			}
+		}
 	}
 }
 
@@ -63,12 +78,15 @@ func handleClient(args []string) {
 		os.Exit(0)
 	}
 
-	response, err := io.ReadAll(conn)
+	buf := make([]byte, 1024)
+	response, err := conn.Read(buf)
 	if err != nil {
 		fmt.Println("could not receive a response from server")
 	}
 
-	fmt.Println(string(response))
+	fmt.Println(string(buf[:response]))
+
+	conn.Write([]byte("test"))
 }
 
 func main() {
