@@ -35,24 +35,29 @@ func handleServer(args []string) {
 			continue
 		}
 
+		fmt.Printf("Connection with %s has been estabilished\n", conn.RemoteAddr())
 		conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
-		conn.Write([]byte("To list channels, type 'list'\n"))
-		conn.Write([]byte("To join a channel, type 'join'\n"))
-		conn.Write([]byte("To create a channel, type 'create'\n"))
 
+		buf := make([]byte, 1024)
 		for {
-			buf := make([]byte, 1024)
 			n, err := conn.Read(buf)
 			if err != nil {
-				fmt.Println("could not receive a response from client")
+				continue
 			}
+
+			if n < 1 {
+				continue
+			}
+
+			fmt.Printf("Received %d bytes\n", n)
 			msg := string(buf[:n])
-			fmt.Println(msg)
+
 			if msg == "exit" {
 				conn.Close()
 				break
 			}
 		}
+		fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
 	}
 }
 
@@ -86,7 +91,16 @@ func handleClient(args []string) {
 
 	fmt.Println(string(buf[:response]))
 
-	conn.Write([]byte("test"))
+	for {
+		var msg string
+		fmt.Scanln(&msg)
+
+		conn.Write([]byte(msg))
+
+		if msg == "exit" {
+			os.Exit(0)
+		}
+	}
 }
 
 func main() {
