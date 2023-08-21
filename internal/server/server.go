@@ -37,11 +37,7 @@ func Server(host string, port int) {
 		buf := make([]byte, 1024)
 		for {
 			n, err := conn.Read(buf)
-			if err != nil {
-				continue
-			}
-
-			if n < 1 {
+			if err != nil || n < 1 {
 				continue
 			}
 
@@ -52,6 +48,8 @@ func Server(host string, port int) {
 				conn.Close()
 				break
 			}
+
+			fmt.Fprintf(conn, "[%s]: %s", conn.RemoteAddr(), msg)
 		}
 
 		fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())

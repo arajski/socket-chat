@@ -7,6 +7,19 @@ import (
 	"strconv"
 )
 
+func reacMessages(conn *net.TCPConn) {
+
+	for conn != nil {
+		buf := make([]byte, 1024)
+		response, err := conn.Read(buf)
+		if err != nil {
+			fmt.Println("could not receive a response from server")
+		}
+
+		fmt.Println(string(buf[:response]))
+	}
+}
+
 func Client(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 	fmt.Printf("Connecting client to %s...\n", address)
@@ -23,13 +36,7 @@ func Client(host string, port int) {
 		os.Exit(0)
 	}
 
-	buf := make([]byte, 1024)
-	response, err := conn.Read(buf)
-	if err != nil {
-		fmt.Println("could not receive a response from server")
-	}
-
-	fmt.Println(string(buf[:response]))
+	go reacMessages(conn)
 
 	for {
 		var msg string

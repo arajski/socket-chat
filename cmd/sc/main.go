@@ -58,5 +58,4 @@ func main() {
 		fmt.Println("socket chat mode is not defined")
 		os.Exit(1)
 	}
-
 }
