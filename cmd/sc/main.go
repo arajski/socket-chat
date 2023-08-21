@@ -1,28 +1,62 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"internal/client"
 	"internal/server"
 	"os"
 )
 
-func main() {
-	args := os.Args[1:]
-	if len(args) < 1 {
-		fmt.Println("no parameters provided")
-		fmt.Println("usage: sc client [hostname]")
+type Mode int32
+
+const (
+	Server Mode = iota
+	Client
+)
+
+var (
+	port int
+	host string
+	mode Mode
+)
+
+func init() {
+	serverFlagSet := flag.NewFlagSet("server", flag.ExitOnError)
+	serverFlagSet.StringVar(&host, "hostname", "127.0.0.1", "Name of a server's host")
+	serverFlagSet.IntVar(&port, "port", 3000, "Server's running port")
+
+	clientFlagSet := flag.NewFlagSet("client", flag.ExitOnError)
+	clientFlagSet.StringVar(&host, "hostname", "127.0.0.1", "Name of a server's host")
+	clientFlagSet.IntVar(&port, "port", 3000, "Server's running port")
+
+	if len(os.Args) < 2 {
+		fmt.Println("expected 'server' or 'client' subcommands")
 		os.Exit(1)
 	}
 
-	switch args[0] {
-	case "client":
-		client.Client(args[1:])
+	switch os.Args[1] {
 	case "server":
-		server.Server(args[1:])
+		serverFlagSet.Parse(os.Args[2:])
+		mode = Server
+	case "client":
+		clientFlagSet.Parse(os.Args[2:])
+		mode = Client
 	default:
-		fmt.Println("unknown command")
-		fmt.Println("usage: sc [server/client]")
+		fmt.Println("expected 'client' or 'server' subcommands")
 		os.Exit(1)
 	}
+}
+
+func main() {
+	switch mode {
+	case Server:
+		server.Server(host, port)
+	case Client:
+		client.Client(host, port)
+	default:
+		fmt.Println("socket chat mode is not defined")
+		os.Exit(1)
+	}
+
 }

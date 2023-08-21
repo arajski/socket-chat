@@ -4,21 +4,16 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 )
 
-func Client(args []string) {
-	if len(args) < 1 {
-		fmt.Println("hostname not provided")
-		fmt.Println("usage: sc client [hostname:port]")
-		os.Exit(1)
-	}
+func Client(host string, port int) {
+	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
+	fmt.Printf("Connecting client to %s...\n", address)
 
-	hostname := &args[0]
-	fmt.Printf("Connecting client to %s...\n", *hostname)
-
-	tcpAddr, err := net.ResolveTCPAddr("tcp", *hostname)
+	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		fmt.Println("invalid hostname:", *hostname)
+		fmt.Println("invalid hostname:", address)
 		os.Exit(0)
 	}
 

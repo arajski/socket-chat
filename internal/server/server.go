@@ -4,19 +4,15 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 )
 
-func Server(args []string) {
-	if len(args) < 1 {
-		fmt.Println("no port provider")
-		fmt.Println("usage: sc server [port]")
-		os.Exit(1)
-	}
+func Server(host string, port int) {
+	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
-	port := &args[0]
-	fmt.Printf("Starting up server on port %s...\n", *port)
+	fmt.Printf("Starting up server on port %d...\n", port)
 
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", *port)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", address)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -57,6 +53,7 @@ func Server(args []string) {
 				break
 			}
 		}
+
 		fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
 	}
 }
