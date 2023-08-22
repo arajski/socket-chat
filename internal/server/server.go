@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func Server(host string, port int) {
+func HandleServer(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
 	fmt.Printf("Starting up server on port %d...\n", port)

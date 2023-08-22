@@ -1,14 +1,14 @@
 package client
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 )
 
-func reacMessages(conn *net.TCPConn) {
-
+func readMessages(conn *net.TCPConn) {
 	for conn != nil {
 		buf := make([]byte, 1024)
 		response, err := conn.Read(buf)
@@ -20,7 +20,7 @@ func reacMessages(conn *net.TCPConn) {
 	}
 }
 
-func Client(host string, port int) {
+func HandleClient(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 	fmt.Printf("Connecting client to %s...\n", address)
 
@@ -36,15 +36,15 @@ func Client(host string, port int) {
 		os.Exit(0)
 	}
 
-	go reacMessages(conn)
+	go readMessages(conn)
 
-	for {
-		var msg string
-		fmt.Scanln(&msg)
+	scanner := bufio.NewScanner(os.Stdin)
 
-		conn.Write([]byte(msg))
+	for scanner.Scan() {
 
-		if msg == "exit" {
+		conn.Write([]byte(scanner.Text()))
+
+		if scanner.Text() == "exit" {
 			os.Exit(0)
 		}
 	}

@@ -51,9 +51,9 @@ func init() {
 func main() {
 	switch mode {
 	case Server:
-		server.Server(host, port)
+		server.HandleServer(host, port)
 	case Client:
-		client.Client(host, port)
+		client.HandleClient(host, port)
 	default:
 		fmt.Println("socket chat mode is not defined")
 		os.Exit(1)
