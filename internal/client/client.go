@@ -20,7 +20,7 @@ func readMessages(conn *net.TCPConn) {
 	}
 }
 
-func HandleClient(host string, port int) {
+func AttachClient(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 	fmt.Printf("Connecting client to %s...\n", address)
 

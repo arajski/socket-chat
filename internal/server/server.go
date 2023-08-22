@@ -7,7 +7,32 @@ import (
 	"strconv"
 )
 
-func HandleServer(host string, port int) {
+func handleClient(conn *net.TCPConn) {
+	fmt.Printf("Connection with %s has been estabilished\n", conn.RemoteAddr())
+	conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
+
+	buf := make([]byte, 1024)
+	for {
+		n, err := conn.Read(buf)
+		if err != nil || n < 1 {
+			continue
+		}
+
+		fmt.Printf("Received %d bytes\n", n)
+		msg := string(buf[:n])
+
+		if msg == "exit" {
+			conn.Close()
+			break
+		}
+
+		fmt.Fprintf(conn, "[%s]: %s", conn.RemoteAddr(), msg)
+	}
+
+	fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
+}
+
+func StartServer(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
 	fmt.Printf("Starting up server on port %d...\n", port)
@@ -30,28 +55,6 @@ func HandleServer(host string, port int) {
 			fmt.Println(err)
 			continue
 		}
-
-		fmt.Printf("Connection with %s has been estabilished\n", conn.RemoteAddr())
-		conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
-
-		buf := make([]byte, 1024)
-		for {
-			n, err := conn.Read(buf)
-			if err != nil || n < 1 {
-				continue
-			}
-
-			fmt.Printf("Received %d bytes\n", n)
-			msg := string(buf[:n])
-
-			if msg == "exit" {
-				conn.Close()
-				break
-			}
-
-			fmt.Fprintf(conn, "[%s]: %s", conn.RemoteAddr(), msg)
-		}
-
-		fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
+		go handleClient(conn.(*net.TCPConn))
 	}
 }
