@@ -1,12 +1,31 @@
-# Socket Chat
+# Socket [Chat](Chat)
 This is a small chat app using web sockets to learn Go.
 
 ## Getting started
-First of all, you need to start a server. You can do it by running
-`go run cmd/sc/main.go server`
+### Installation
+First build the project by running
+```bash
+go build ./cmd/sc
+```
 
-It will start a server on `localhost`, with a default port of `3000` (run `-h` to change those settings).
-Once the server is running, attach a client by running
-`go run cmd/sc/main.go client`
+### Running a server
+To start handling chat clients, we need a running server. Start it up by running
+```bash
+sc server [-hostname] [-port]
+```
+By default, server is running on `localhost`, port `3000`
+
+### Running a client
+Once a server is running, a separate clients can be attached by running:
+
+```bash
+sc client [-hostname] [-port]
+```
+Default settings are also `localhost` and port `3000`
 
 Happy chatting!
+
+## License
+
+[MIT](https://github.com/arajski/socket-chat/raw/main/LICENSE)
+
