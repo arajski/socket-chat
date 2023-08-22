@@ -14,6 +14,7 @@ func readMessages(conn *net.TCPConn) {
 		response, err := conn.Read(buf)
 		if err != nil {
 			fmt.Println("could not receive a response from server")
+			os.Exit(1)
 		}
 
 		fmt.Println(string(buf[:response]))

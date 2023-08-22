@@ -7,7 +7,13 @@ import (
 	"strconv"
 )
 
-func handleClient(conn *net.TCPConn) {
+type Message struct {
+	size   int
+	client string
+	data   string
+}
+
+func handleClient(conn *net.TCPConn, messages chan<- Message) {
 	fmt.Printf("Connection with %s has been estabilished\n", conn.RemoteAddr())
 	conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
 
@@ -18,18 +24,23 @@ func handleClient(conn *net.TCPConn) {
 			continue
 		}
 
-		fmt.Printf("Received %d bytes\n", n)
 		msg := string(buf[:n])
+		messages <- Message{size: n, client: conn.RemoteAddr().String(), data: msg}
 
 		if msg == "exit" {
 			conn.Close()
 			break
 		}
-
-		fmt.Fprintf(conn, "[%s]: %s", conn.RemoteAddr(), msg)
 	}
-
 	fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
+}
+
+func getMessages(messages <-chan Message) {
+	for {
+		msg := <-messages
+		fmt.Printf("Received %d bytes from %s\n", msg.size, msg.client)
+		//		fmt.Fprintf(conn, "[%s]: %s", msg.client, msg.data)
+	}
 }
 
 func StartServer(host string, port int) {
@@ -49,12 +60,15 @@ func StartServer(host string, port int) {
 		os.Exit(1)
 	}
 
+	messages := make(chan Message)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		go handleClient(conn.(*net.TCPConn))
+		go handleClient(conn.(*net.TCPConn), messages)
+		go getMessages(messages)
 	}
 }
