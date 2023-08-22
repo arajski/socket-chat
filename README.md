@@ -27,5 +27,5 @@ Happy chatting!
 
 ## License
 
-[MIT](https://github.com/arajski/socket-chat/raw/main/LICENSE)
+[MIT](https://github.com/arajski/socket-chat/blob/main/LICENSE.md)
 
