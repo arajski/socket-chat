@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 type Message struct {
@@ -70,7 +72,15 @@ func StartServer(host string, port int) {
 	clients := make(map[string]*net.TCPConn)
 	messages := make(chan Message)
 
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	for {
+		go func() {
+			<-c
+			fmt.Println("Shutting down...")
+			os.Exit(1)
+		}()
+
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println(err)
@@ -79,5 +89,6 @@ func StartServer(host string, port int) {
 
 		go handleClient(conn.(*net.TCPConn), messages, clients)
 		go getMessages(messages, clients)
+
 	}
 }
