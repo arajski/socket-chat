@@ -15,14 +15,16 @@ type Message struct {
 	data   string
 }
 
-func handleClient(conn *net.TCPConn, messages chan<- Message, clients map[string]*net.TCPConn) {
+func handleClient(clients map[string]*net.TCPConn, conn *net.TCPConn, in chan<- Message) {
 	clients[conn.RemoteAddr().String()] = conn
 	defer delete(clients, conn.RemoteAddr().String())
 
-	fmt.Printf("Connection with %s has been estabilished\n", conn.RemoteAddr())
-	conn.Write([]byte("Connection estabilished! Welcome to the socket-chat!\n"))
+	fmt.Printf("[INFO] Connection with %s has been estabilished\n", conn.RemoteAddr())
+	fmt.Printf("[INFO] Number of clients: %d\n", len(clients))
 
-	buf := make([]byte, 1024)
+	conn.Write([]byte("[INFO] Connection estabilished! Welcome to the socket-chat!\n"))
+
+	buf := make([]byte, 128)
 	for {
 		n, err := conn.Read(buf)
 		if err != nil || n < 1 {
@@ -30,7 +32,9 @@ func handleClient(conn *net.TCPConn, messages chan<- Message, clients map[string
 		}
 
 		msg := string(buf[:n])
-		messages <- Message{size: n, client: conn.RemoteAddr().String(), data: msg}
+		in <- Message{size: n, client: conn.RemoteAddr().String(), data: msg}
+
+		fmt.Printf("[INFO] Received %d bytes from %s\n", n, conn.RemoteAddr().String())
 
 		if msg == "exit" {
 			conn.Close()
@@ -38,24 +42,38 @@ func handleClient(conn *net.TCPConn, messages chan<- Message, clients map[string
 		}
 	}
 
-	fmt.Printf("Connection with %s has been closed\n", conn.RemoteAddr())
+	fmt.Printf("[INFO] Connection with %s has been closed\n", conn.RemoteAddr())
 }
 
-func getMessages(messages <-chan Message, clients map[string]*net.TCPConn) {
+func handleMessages(in <-chan Message, clients map[string]*net.TCPConn) {
 	for {
-		msg := <-messages
-		fmt.Printf("Received %d bytes from %s\n", msg.size, msg.client)
+		msg := <-in
 
 		for _, conn := range clients {
-			fmt.Fprintf(conn, "[%s]: %s", msg.client, msg.data)
+			go func(conn *net.TCPConn) {
+				fmt.Printf("[INFO] Sending %d bytes to %s\n", msg.size, conn.RemoteAddr().String())
+				fmt.Fprintf(conn, "[%s]:%s", msg.client, msg.data)
+			}(conn)
 		}
 	}
 }
 
+func handleSignals(signals <-chan os.Signal) {
+	<-signals
+	fmt.Println("[ERROR] Shutting down...")
+	os.Exit(1)
+}
+
 func StartServer(host string, port int) {
+	messages := make(chan Message, 100)
+	signals := make(chan os.Signal, 2)
+	clients := make(map[string]*net.TCPConn)
+
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
-	fmt.Printf("Starting up server on port %d...\n", port)
+	fmt.Printf("[INFO] Starting up server on port %d...\n", port)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", address)
 	if err != nil {
@@ -69,26 +87,16 @@ func StartServer(host string, port int) {
 		os.Exit(1)
 	}
 
-	clients := make(map[string]*net.TCPConn)
-	messages := make(chan Message)
+	go handleMessages(messages, clients)
+	go handleSignals(signals)
 
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	for {
-		go func() {
-			<-c
-			fmt.Println("Shutting down...")
-			os.Exit(1)
-		}()
-
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		go handleClient(conn.(*net.TCPConn), messages, clients)
-		go getMessages(messages, clients)
-
+		go handleClient(clients, conn.(*net.TCPConn), messages)
 	}
 }

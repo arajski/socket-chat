@@ -13,7 +13,7 @@ func readMessages(conn *net.TCPConn) {
 		buf := make([]byte, 1024)
 		response, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("could not receive a response from server")
+			fmt.Println("[ERROR] could not receive a response from server")
 			os.Exit(1)
 		}
 
@@ -23,17 +23,17 @@ func readMessages(conn *net.TCPConn) {
 
 func AttachClient(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
-	fmt.Printf("Connecting client to %s...\n", address)
+	fmt.Printf("[INFO] Connecting client to %s...\n", address)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		fmt.Println("invalid hostname:", address)
+		fmt.Println("[ERROR] Invalid hostname:", address)
 		os.Exit(0)
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		fmt.Println("could not connect to the host")
+		fmt.Println("[ERROR] Could not connect to the host")
 		os.Exit(0)
 	}
 

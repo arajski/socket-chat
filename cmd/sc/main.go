@@ -31,7 +31,7 @@ func init() {
 	clientFlagSet.IntVar(&port, "port", 3000, "Server's running port")
 
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'server' or 'client' subcommands")
+		fmt.Println("[ERROR] Expected 'server' or 'client' subcommands")
 		os.Exit(1)
 	}
 
@@ -43,7 +43,7 @@ func init() {
 		clientFlagSet.Parse(os.Args[2:])
 		mode = Client
 	default:
-		fmt.Println("expected 'client' or 'server' subcommands")
+		fmt.Println("[ERROR] Expected 'client' or 'server' subcommands")
 		os.Exit(1)
 	}
 }
@@ -55,7 +55,7 @@ func main() {
 	case Client:
 		client.AttachClient(host, port)
 	default:
-		fmt.Println("socket chat mode is not defined")
+		fmt.Println("[ERROR] Socket chat mode is not defined")
 		os.Exit(1)
 	}
 }
