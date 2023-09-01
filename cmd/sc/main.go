@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"internal/client"
 	"internal/server"
+	"log"
 	"os"
 )
 
@@ -31,8 +31,7 @@ func init() {
 	clientFlagSet.IntVar(&port, "port", 3000, "Server's running port")
 
 	if len(os.Args) < 2 {
-		fmt.Println("[ERROR] Expected 'server' or 'client' subcommands")
-		os.Exit(1)
+		log.Fatalln("expected 'server' or 'client' subcommands")
 	}
 
 	switch os.Args[1] {
@@ -43,7 +42,7 @@ func init() {
 		clientFlagSet.Parse(os.Args[2:])
 		mode = Client
 	default:
-		fmt.Println("[ERROR] Expected 'client' or 'server' subcommands")
+		log.Fatalln("expected 'client' or 'server' subcommands")
 		os.Exit(1)
 	}
 }
@@ -55,7 +54,6 @@ func main() {
 	case Client:
 		client.AttachClient(host, port)
 	default:
-		fmt.Println("[ERROR] Socket chat mode is not defined")
-		os.Exit(1)
+		log.Fatalln("socket chat mode is not defined")
 	}
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -19,10 +20,10 @@ func handleClient(clients map[string]*net.TCPConn, conn *net.TCPConn, in chan<- 
 	clients[conn.RemoteAddr().String()] = conn
 	defer delete(clients, conn.RemoteAddr().String())
 
-	fmt.Printf("[INFO] Connection with %s has been estabilished\n", conn.RemoteAddr())
-	fmt.Printf("[INFO] Number of clients: %d\n", len(clients))
+	log.Printf("connection with %s has been estabilished\n", conn.RemoteAddr())
+	log.Printf("number of clients: %d\n", len(clients))
 
-	conn.Write([]byte("[INFO] Connection estabilished! Welcome to the socket-chat!\n"))
+	conn.Write([]byte("connection estabilished! Welcome to the socket-chat!\n"))
 
 	buf := make([]byte, 128)
 	for {
@@ -34,7 +35,7 @@ func handleClient(clients map[string]*net.TCPConn, conn *net.TCPConn, in chan<- 
 		msg := string(buf[:n])
 		in <- Message{size: n, client: conn.RemoteAddr().String(), data: msg}
 
-		fmt.Printf("[INFO] Received %d bytes from %s\n", n, conn.RemoteAddr().String())
+		log.Printf("received %d bytes from %s\n", n, conn.RemoteAddr().String())
 
 		if msg == "exit" {
 			conn.Close()
@@ -42,7 +43,7 @@ func handleClient(clients map[string]*net.TCPConn, conn *net.TCPConn, in chan<- 
 		}
 	}
 
-	fmt.Printf("[INFO] Connection with %s has been closed\n", conn.RemoteAddr())
+	log.Printf("sonnection with %s has been closed\n", conn.RemoteAddr())
 }
 
 func handleMessages(in <-chan Message, clients map[string]*net.TCPConn) {
@@ -51,7 +52,7 @@ func handleMessages(in <-chan Message, clients map[string]*net.TCPConn) {
 
 		for _, conn := range clients {
 			go func(conn *net.TCPConn) {
-				fmt.Printf("[INFO] Sending %d bytes to %s\n", msg.size, conn.RemoteAddr().String())
+				log.Printf("sending %d bytes to %s\n", msg.size, conn.RemoteAddr().String())
 				fmt.Fprintf(conn, "[%s]:%s", msg.client, msg.data)
 			}(conn)
 		}
@@ -60,8 +61,7 @@ func handleMessages(in <-chan Message, clients map[string]*net.TCPConn) {
 
 func handleSignals(signals <-chan os.Signal) {
 	<-signals
-	fmt.Println("[ERROR] Shutting down...")
-	os.Exit(1)
+	log.Fatal("shutting down...")
 }
 
 func StartServer(host string, port int) {
@@ -73,18 +73,16 @@ func StartServer(host string, port int) {
 
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
-	fmt.Printf("[INFO] Starting up server on port %d...\n", port)
+	log.Printf("started up server on port %d\n", port)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", address)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	go handleMessages(messages, clients)
@@ -93,7 +91,6 @@ func StartServer(host string, port int) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 

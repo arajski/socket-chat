@@ -3,6 +3,7 @@ package client
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"strconv"
@@ -13,28 +14,25 @@ func readMessages(conn *net.TCPConn) {
 		buf := make([]byte, 1024)
 		response, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("[ERROR] could not receive a response from server")
-			os.Exit(1)
+			log.Fatalf("could not receive a response from server")
 		}
 
-		fmt.Println(string(buf[:response]))
+		log.Println(string(buf[:response]))
 	}
 }
 
 func AttachClient(host string, port int) {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
-	fmt.Printf("[INFO] Connecting client to %s...\n", address)
+	log.Printf("connecting client to %s...\n", address)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		fmt.Println("[ERROR] Invalid hostname:", address)
-		os.Exit(0)
+		log.Fatalln("invalid hostname:", address)
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		fmt.Println("[ERROR] Could not connect to the host")
-		os.Exit(0)
+		log.Fatalln("could not connect to the host")
 	}
 
 	go readMessages(conn)
