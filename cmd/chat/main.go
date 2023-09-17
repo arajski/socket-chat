@@ -50,7 +50,8 @@ func init() {
 func main() {
 	switch mode {
 	case Server:
-		server.StartServer(host, port)
+		server := server.NewServer(host, port)
+		server.Run()
 	case Client:
 		client.AttachClient(host, port)
 	default:
