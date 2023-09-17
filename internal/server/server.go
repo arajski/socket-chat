@@ -12,15 +12,15 @@ import (
 
 type Message struct {
 	size   int
-  client string
+	client string
 	data   string
 }
 
 type ChatServer struct {
 	listener *net.TCPListener
 	messages chan Message
-	signals chan os.Signal
-	clients map[string]*net.TCPConn
+	signals  chan os.Signal
+	clients  map[string]*net.TCPConn
 }
 
 func NewServer(host string, port int) *ChatServer {
@@ -58,9 +58,9 @@ func (server ChatServer) Run() {
 	}
 }
 
-func (server ChatServer) handleClient (conn *net.TCPConn) { 
-	server.clients[conn.RemoteAddr().String()] = conn 
-	defer conn.Close() 
+func (server ChatServer) handleClient(conn *net.TCPConn) {
+	server.clients[conn.RemoteAddr().String()] = conn
+	defer conn.Close()
 	defer delete(server.clients, conn.RemoteAddr().String())
 
 	log.Printf("connection with %s has been estabilished\n", conn.RemoteAddr())
@@ -96,7 +96,7 @@ func (server ChatServer) handleMessages() {
 			go func(conn *net.TCPConn) {
 				log.Printf("sending %d bytes to %s\n", msg.size, conn.RemoteAddr().String())
 				fmt.Fprintf(conn, "[%s]:%s", msg.client, msg.data)
-				}(conn)
+			}(conn)
 		}
 	}
 }
