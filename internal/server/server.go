@@ -42,7 +42,7 @@ func NewServer(host string, port int) *Server {
 	return &server
 }
 
-func (server Server) Run() {
+func (server *Server) Run() {
 	signal.Notify(server.signals, os.Interrupt, syscall.SIGTERM)
 	go server.handleMessages()
 	go server.handleSignals()
@@ -58,7 +58,7 @@ func (server Server) Run() {
 	}
 }
 
-func (server Server) handleClient(conn *net.TCPConn) {
+func (server *Server) handleClient(conn *net.TCPConn) {
 	server.clients[conn.RemoteAddr().String()] = conn
 	defer conn.Close()
 	defer delete(server.clients, conn.RemoteAddr().String())
@@ -88,7 +88,7 @@ func (server Server) handleClient(conn *net.TCPConn) {
 	log.Printf("sonnection with %s has been closed\n", conn.RemoteAddr())
 }
 
-func (server Server) handleMessages() {
+func (server *Server) handleMessages() {
 	for {
 		msg := <-server.messages
 
@@ -101,7 +101,7 @@ func (server Server) handleMessages() {
 	}
 }
 
-func (server Server) handleSignals() {
+func (server *Server) handleSignals() {
 	<-server.signals
 	log.Fatal("shutting down...")
 }
