@@ -16,14 +16,14 @@ type Message struct {
 	data   string
 }
 
-type ChatServer struct {
+type Server struct {
 	listener *net.TCPListener
 	messages chan Message
 	signals  chan os.Signal
 	clients  map[string]*net.TCPConn
 }
 
-func NewServer(host string, port int) *ChatServer {
+func NewServer(host string, port int) *Server {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 
 	log.Printf("started up server on port %d\n", port)
@@ -38,11 +38,11 @@ func NewServer(host string, port int) *ChatServer {
 		log.Fatal(err)
 	}
 
-	server := ChatServer{listener, make(chan Message, 100), make(chan os.Signal, 2), make(map[string]*net.TCPConn)}
+	server := Server{listener, make(chan Message, 100), make(chan os.Signal, 2), make(map[string]*net.TCPConn)}
 	return &server
 }
 
-func (server ChatServer) Run() {
+func (server Server) Run() {
 	signal.Notify(server.signals, os.Interrupt, syscall.SIGTERM)
 	go server.handleMessages()
 	go server.handleSignals()
@@ -58,7 +58,7 @@ func (server ChatServer) Run() {
 	}
 }
 
-func (server ChatServer) handleClient(conn *net.TCPConn) {
+func (server Server) handleClient(conn *net.TCPConn) {
 	server.clients[conn.RemoteAddr().String()] = conn
 	defer conn.Close()
 	defer delete(server.clients, conn.RemoteAddr().String())
@@ -88,7 +88,7 @@ func (server ChatServer) handleClient(conn *net.TCPConn) {
 	log.Printf("sonnection with %s has been closed\n", conn.RemoteAddr())
 }
 
-func (server ChatServer) handleMessages() {
+func (server Server) handleMessages() {
 	for {
 		msg := <-server.messages
 
@@ -101,7 +101,7 @@ func (server ChatServer) handleMessages() {
 	}
 }
 
-func (server ChatServer) handleSignals() {
+func (server Server) handleSignals() {
 	<-server.signals
 	log.Fatal("shutting down...")
 }
