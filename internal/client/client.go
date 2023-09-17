@@ -9,19 +9,12 @@ import (
 	"strconv"
 )
 
-func readMessages(conn *net.TCPConn) {
-	for conn != nil {
-		buf := make([]byte, 1024)
-		response, err := conn.Read(buf)
-		if err != nil {
-			log.Fatalf("could not receive a response from server")
-		}
-
-		log.Println(string(buf[:response]))
-	}
+type Client struct {
+	conn    *net.TCPConn
+	scanner *bufio.Scanner
 }
 
-func AttachClient(host string, port int) {
+func Connect(host string, port int) *Client {
 	address := fmt.Sprintf("%s:%s", host, strconv.Itoa(port))
 	log.Printf("connecting client to %s...\n", address)
 
@@ -35,16 +28,30 @@ func AttachClient(host string, port int) {
 		log.Fatalln("could not connect to the host")
 	}
 
-	go readMessages(conn)
+	client := Client{conn, bufio.NewScanner(os.Stdin)}
+	return &client
+}
 
-	scanner := bufio.NewScanner(os.Stdin)
+func (client Client) Run() {
+	go client.readMessages()
 
-	for scanner.Scan() {
+	for client.scanner.Scan() {
+		client.conn.Write([]byte(client.scanner.Text()))
 
-		conn.Write([]byte(scanner.Text()))
-
-		if scanner.Text() == "exit" {
+		if client.scanner.Text() == "exit" {
 			os.Exit(0)
 		}
+	}
+}
+
+func (client Client) readMessages() {
+	for client.conn != nil {
+		buf := make([]byte, 1024)
+		response, err := client.conn.Read(buf)
+		if err != nil {
+			log.Fatalf("could not receive a response from server")
+		}
+
+		log.Println(string(buf[:response]))
 	}
 }
