@@ -53,7 +53,7 @@ func main() {
 		server := server.NewServer(host, port)
 		server.Run()
 	case Client:
-		client := client.Connect(host,port)
+		client := client.Connect(host, port)
 		client.Run()
 	default:
 		log.Fatalln("socket chat mode is not defined")

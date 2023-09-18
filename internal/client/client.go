@@ -32,7 +32,7 @@ func Connect(host string, port int) *Client {
 	return &client
 }
 
-func (client Client) Run() {
+func (client *Client) Run() {
 	go client.readMessages()
 
 	for client.scanner.Scan() {
@@ -44,7 +44,7 @@ func (client Client) Run() {
 	}
 }
 
-func (client Client) readMessages() {
+func (client *Client) readMessages() {
 	for client.conn != nil {
 		buf := make([]byte, 1024)
 		response, err := client.conn.Read(buf)
