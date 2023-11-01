@@ -45,8 +45,9 @@ func (client *Client) Run() {
 }
 
 func (client *Client) readMessages() {
+	buf := make([]byte, 1024)
+
 	for client.conn != nil {
-		buf := make([]byte, 1024)
 		response, err := client.conn.Read(buf)
 		if err != nil {
 			log.Fatalf("could not receive a response from server")

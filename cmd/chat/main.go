@@ -8,39 +8,31 @@ import (
 	"os"
 )
 
-type Mode int32
+type Runner interface {
+	Run()
+}
 
-const (
-	Server Mode = iota
-	Client
-)
-
-var (
-	port int
-	host string
-	mode Mode
-)
+var runner Runner
 
 func init() {
-	serverFlagSet := flag.NewFlagSet("server", flag.ExitOnError)
-	serverFlagSet.StringVar(&host, "hostname", "127.0.0.1", "Name of a server's host")
-	serverFlagSet.IntVar(&port, "port", 3000, "Server's running port")
+	var host string
+	var port int
 
-	clientFlagSet := flag.NewFlagSet("client", flag.ExitOnError)
-	clientFlagSet.StringVar(&host, "hostname", "127.0.0.1", "Name of a server's host")
-	clientFlagSet.IntVar(&port, "port", 3000, "Server's running port")
+	flagSet := flag.NewFlagSet("flags", flag.ExitOnError)
+	flagSet.StringVar(&host, "hostname", "127.0.0.1", "Name of a host")
+	flagSet.IntVar(&port, "port", 3000, "Running port")
 
 	if len(os.Args) < 2 {
 		log.Fatalln("expected 'server' or 'client' subcommands")
 	}
 
+	flagSet.Parse(os.Args[2:])
+
 	switch os.Args[1] {
 	case "server":
-		serverFlagSet.Parse(os.Args[2:])
-		mode = Server
+		runner = server.NewServer(host, port)
 	case "client":
-		clientFlagSet.Parse(os.Args[2:])
-		mode = Client
+		runner = client.Connect(host, port)
 	default:
 		log.Fatalln("expected 'client' or 'server' subcommands")
 		os.Exit(1)
@@ -48,14 +40,5 @@ func init() {
 }
 
 func main() {
-	switch mode {
-	case Server:
-		server := server.NewServer(host, port)
-		server.Run()
-	case Client:
-		client := client.Connect(host, port)
-		client.Run()
-	default:
-		log.Fatalln("socket chat mode is not defined")
-	}
+	runner.Run()
 }
