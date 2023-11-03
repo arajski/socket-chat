@@ -5,13 +5,13 @@ This is a small chat app using web sockets to learn Go.
 ### Installation
 First build the project by running
 ```bash
-go build ./cmd/sc
+go build .
 ```
 
 ### Running a server
 To start handling chat clients, we need a running server. Start it up by running
 ```bash
-sc server [-hostname] [-port]
+./socket-chat server [--hostname] [--port]
 ```
 By default, server is running on `localhost`, port `3000`
 
@@ -19,7 +19,7 @@ By default, server is running on `localhost`, port `3000`
 Once a server is running, a separate clients can be attached by running:
 
 ```bash
-sc client [-hostname] [-port]
+./socket-chat client [--hostname] [--port]
 ```
 Default settings are also `localhost` and port `3000`
 
