@@ -17,8 +17,8 @@ var clientCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(clientCmd)
-	clientCmd.Flags().StringP("hostname", "t", "127.0.0.1", "A server hostname. Defaults to localhost")
-	clientCmd.Flags().IntP("port", "p", 3000, "A server port. Defaults to 3000")
+	clientCmd.Flags().StringP("host", "H", "127.0.0.1", "A server hostname. Defaults to localhost")
+	clientCmd.Flags().IntP("port", "P", 3000, "A server port. Defaults to 3000")
 }
 
 func startClient(cmd *cobra.Command, args []string) {
